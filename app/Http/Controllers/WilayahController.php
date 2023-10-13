@@ -274,14 +274,16 @@ class WilayahController extends Controller
             'tingkatan_wilayah' => 'required',
             'wilayah' => 'required',
             'kode_wilayah' => 'required|numeric',
+            'nama_wilayah' => 'required',
         ]);
 
         $tingkatanWilayah = $request->input('tingkatan_wilayah');
         $selectedWilayah = $request->input('wilayah');
         $kodeWilayahBaru = $request->input('kode_wilayah');
+        $namaWilayah = $request->input('nama_wilayah');
 
         if ($tingkatanWilayah === 'Provinsi') {
-            Wilayah::where('k1', $selectedWilayah)->update(['k1' => $kodeWilayahBaru]);
+            Wilayah::where('k1', $selectedWilayah)->update(['k1' => $kodeWilayahBaru, 'provinsi' => $namaWilayah]);
 
             $wilayah = Wilayah::where('k1', $kodeWilayahBaru)->get();
 
@@ -290,7 +292,7 @@ class WilayahController extends Controller
                 $kodePotongan[0] = $kodeWilayahBaru;
                 $kodeKeseluruhanBaru = implode('.', $kodePotongan);
 
-                $sql = "UPDATE `00_`.`md_wilayah_administrasi` SET kode = '$kodeKeseluruhanBaru', k1 = '$kodeWilayahBaru' WHERE kode = '$wil->kode';\n";
+                $sql = "UPDATE `00_`.`md_wilayah_administrasi` SET kode = '$kodeKeseluruhanBaru', k1 = '$kodeWilayahBaru', provinsi = '$namaWilayah' WHERE kode = '$wil->kode';\n";
                 $sqlFilePath = public_path('sql/logfile.sql');
                 file_put_contents($sqlFilePath, $sql, FILE_APPEND);
                 $wil->update(['kode' => $kodeKeseluruhanBaru]);
@@ -303,11 +305,12 @@ class WilayahController extends Controller
                 if (isset($kodePotongan[1])) {
                     $kodeKab = $kodePotongan[0] . '.' . $kodePotongan[1];
                     if ($kodeKab == $selectedWilayah) {
+                        $wil->kabkota = $namaWilayah;
                         $wil->k2 = $kodeWilayahBaru;
                         $kodePotongan[1] = $kodeWilayahBaru;
                         $kodeKeseluruhanBaru = implode('.', $kodePotongan);
 
-                        $sql = "UPDATE `00_`.`md_wilayah_administrasi` SET kode = '$kodeKeseluruhanBaru', k2 = '$kodeWilayahBaru' WHERE kode = '$wil->kode';\n";
+                        $sql = "UPDATE `00_`.`md_wilayah_administrasi` SET kode = '$kodeKeseluruhanBaru', k2 = '$kodeWilayahBaru', kabkota = '$namaWilayah' WHERE kode = '$wil->kode';\n";
                         $sqlFilePath = public_path('sql/logfile.sql');
                         file_put_contents($sqlFilePath, $sql, FILE_APPEND);
 
@@ -324,11 +327,12 @@ class WilayahController extends Controller
                 if (isset($kodePotongan[1]) && isset($kodePotongan[2])) {
                     $kodeKab = $kodePotongan[0] . '.' . $kodePotongan[1] . '.' . $kodePotongan[2];
                     if ($kodeKab == $selectedWilayah) {
+                        $wil->kecamatan = $namaWilayah;
                         $wil->k3 = $kodeWilayahBaru;
                         $kodePotongan[2] = $kodeWilayahBaru;
                         $kodeKeseluruhanBaru = implode('.', $kodePotongan);
 
-                        $sql = "UPDATE `00_`.`md_wilayah_administrasi` SET kode = '$kodeKeseluruhanBaru', k3 = '$kodeWilayahBaru' WHERE kode = '$wil->kode';\n";
+                        $sql = "UPDATE `00_`.`md_wilayah_administrasi` SET kode = '$kodeKeseluruhanBaru', k3 = '$kodeWilayahBaru', kecamatan = '$namaWilayah' WHERE kode = '$wil->kode';\n";
                         $sqlFilePath = public_path('sql/logfile.sql');
                         file_put_contents($sqlFilePath, $sql, FILE_APPEND);
 
@@ -338,19 +342,119 @@ class WilayahController extends Controller
                 }
             }
         } elseif ($tingkatanWilayah === 'Desa/Kelurahan') {
-            Wilayah::where('kode', $selectedWilayah)->update(['k4' => $kodeWilayahBaru]);
-
             $wilayah = Wilayah::where('kode', $selectedWilayah)->first();
 
             $kodePotongan = explode('.', $wilayah->kode);
             $kodePotongan[3] = $kodeWilayahBaru;
             $kodeKeseluruhanBaru = implode('.', $kodePotongan);
 
-            $wilayah->update(['kode' => $kodeKeseluruhanBaru]);
+            $wilayah->deskel = $namaWilayah;
+            $wilayah->k4 = $kodeWilayahBaru;
+            $wilayah->kode = $kodeKeseluruhanBaru;
+            $wilayah->update();
 
-            $sql = "UPDATE `00_`.`md_wilayah_administrasi` SET kode = '$kodeKeseluruhanBaru', k4 = '$kodeWilayahBaru' WHERE kode = '$selectedWilayah';\n";
+            $sql = "UPDATE `00_`.`md_wilayah_administrasi` SET kode = '$kodeKeseluruhanBaru', k4 = '$kodeWilayahBaru', deskel = '$namaWilayah' WHERE kode = '$selectedWilayah';\n";
             $sqlFilePath = public_path('sql/logfile.sql');
             file_put_contents($sqlFilePath, $sql, FILE_APPEND);
+        }
+
+        return redirect('/');
+    }
+
+    public function editSelect(Request $request)
+    {
+        $this->validate($request, [
+            'tingkatan_wilayah' => 'required',
+            'wilayah' => 'required',
+            'kode_wilayah' => 'required|numeric',
+            'hasil_checkbox' => 'required',
+            'nama_wilayah' => 'required',
+        ]);
+
+        $tingkatanWilayah = $request->input('tingkatan_wilayah');
+        $selectedWilayah = $request->input('wilayah');
+        $kodeWilayahBaru = $request->input('kode_wilayah');
+        $checkboxWilayah = $request->input('hasil_checkbox');
+        $namaWilayah = $request->input('nama_wilayah');
+
+        if ($tingkatanWilayah === 'Provinsi') {
+            $potonganCheckbox = explode(',', $checkboxWilayah);
+            $wilayah = Wilayah::get();
+
+            foreach ($wilayah as $wil) {
+                $kodePotongan = explode('.', $wil->kode);
+                if (isset($kodePotongan[1])) {
+                    $kodeProvinsi = $kodePotongan[0];
+                    $kodeKab = $kodePotongan[0] . '.' . $kodePotongan[1];
+                    foreach ($potonganCheckbox as $pot) {
+                        if ($kodeProvinsi == $selectedWilayah && $pot == $kodeKab) {
+                            $wil->provinsi = $namaWilayah;
+                            $wil->k1 = $kodeWilayahBaru;
+                            $kodePotongan[0] = $kodeWilayahBaru;
+                            $kodeKeseluruhanBaru = implode('.', $kodePotongan);
+
+                            $sql = "UPDATE `00_`.`md_wilayah_administrasi` SET kode = '$kodeKeseluruhanBaru', k2 = '$kodeWilayahBaru', provinsi = '$namaWilayah' WHERE kode = '$wil->kode';\n";
+                            $sqlFilePath = public_path('sql/logfile.sql');
+                            file_put_contents($sqlFilePath, $sql, FILE_APPEND);
+
+                            $wil->kode = $kodeKeseluruhanBaru;
+                            $wil->update();
+                        }
+                    }
+                }
+            }
+        } elseif ($tingkatanWilayah === 'Kab/Kota') {
+            $potonganCheckbox = explode(',', $checkboxWilayah);
+            $wilayah = Wilayah::get();
+
+            foreach ($wilayah as $wil) {
+                $kodePotongan = explode('.', $wil->kode);
+                if (isset($kodePotongan[1]) && isset($kodePotongan[2])) {
+                    $kodeKab = $kodePotongan[0] . '.' . $kodePotongan[1];
+                    $kodeKecamatan = $kodePotongan[0] . '.' . $kodePotongan[1] . '.' . $kodePotongan[2];
+                    foreach ($potonganCheckbox as $pot) {
+                        if ($kodeKab == $selectedWilayah && $pot == $kodeKecamatan) {
+                            $wil->kabkota = $namaWilayah;
+                            $wil->k2 = $kodeWilayahBaru;
+                            $kodePotongan[1] = $kodeWilayahBaru;
+                            $kodeKeseluruhanBaru = implode('.', $kodePotongan);
+
+                            $sql = "UPDATE `00_`.`md_wilayah_administrasi` SET kode = '$kodeKeseluruhanBaru', k2 = '$kodeWilayahBaru', kabkota = '$namaWilayah' WHERE kode = '$wil->kode';\n";
+                            $sqlFilePath = public_path('sql/logfile.sql');
+                            file_put_contents($sqlFilePath, $sql, FILE_APPEND);
+
+                            $wil->kode = $kodeKeseluruhanBaru;
+                            $wil->update();
+                        }
+                    }
+                }
+            }
+        } elseif ($tingkatanWilayah === 'Kecamatan') {
+            $potonganCheckbox = explode(',', $checkboxWilayah);
+            $wilayah = Wilayah::get();
+
+            foreach ($wilayah as $wil) {
+                $kodePotongan = explode('.', $wil->kode);
+                if (isset($kodePotongan[1]) && isset($kodePotongan[2]) && isset($kodePotongan[3])) {
+                    $kodeKecamatan = $kodePotongan[0] . '.' . $kodePotongan[1] . '.' . $kodePotongan[2];
+                    $kodeDesa = $kodePotongan[0] . '.' . $kodePotongan[1] . '.' . $kodePotongan[2] . '.' . $kodePotongan[3];
+                    foreach ($potonganCheckbox as $pot) {
+                        if ($kodeKecamatan == $selectedWilayah && $pot == $kodeDesa) {
+                            $wil->kecamatan = $namaWilayah;
+                            $wil->k3 = $kodeWilayahBaru;
+                            $kodePotongan[2] = $kodeWilayahBaru;
+                            $kodeKeseluruhanBaru = implode('.', $kodePotongan);
+
+                            $sql = "UPDATE `00_`.`md_wilayah_administrasi` SET kode = '$kodeKeseluruhanBaru', k3 = '$kodeWilayahBaru', kecamatan = '$namaWilayah' WHERE kode = '$wil->kode';\n";
+                            $sqlFilePath = public_path('sql/logfile.sql');
+                            file_put_contents($sqlFilePath, $sql, FILE_APPEND);
+
+                            $wil->kode = $kodeKeseluruhanBaru;
+                            $wil->update();
+                        }
+                    }
+                }
+            }
         }
 
         return redirect('/');

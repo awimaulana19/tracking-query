@@ -20,3 +20,4 @@ Route::post('/edit/{kode}', [WilayahController::class, 'update']);
 Route::get('/hapus/{kode}', [WilayahController::class, 'hapus']);
 Route::get('/sesibaru', [WilayahController::class, 'sesibaru']);
 Route::post('/editmultiple', [WilayahController::class, 'editMultiple']);
+Route::post('/editselect', [WilayahController::class, 'editSelect']);

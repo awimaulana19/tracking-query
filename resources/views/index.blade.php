@@ -249,8 +249,9 @@
                             <a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal"><i
                                     class="material-icons">&#xE147;</i> <span>Tambah Wilayah</span></a>
                             <a href="/sesibaru" class="btn btn-primary"><span>Download SQL Dan Buka Sesi Baru</span></a>
-                            <a href="#editMultiple" class="btn btn-warning" data-toggle="modal"><span>Edit
-                                    Multiple</span></a>
+                            <a href="#editMultiple" class="btn btn-warning" data-toggle="modal"><span>Multiple
+                                    Edit</span></a>
+                            <a href="#editSelect" class="btn btn-info" data-toggle="modal"><span>Select Edit</span></a>
                         </div>
                     </div>
                 </div>
@@ -542,8 +543,14 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <label>Nama Wilayah</label>
+                            <input type="text" value="" class="form-control" id="nama_wilayah"
+                                name="nama_wilayah" required>
+                        </div>
+                        <div class="form-group">
                             <label>Kode Wilayah</label>
-                            <input type="number" class="form-control" id="kode_wilayah" name="kode_wilayah" required>
+                            <input type="number" value="" class="form-control" id="kode_wilayah" name="kode_wilayah"
+                                required>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -557,37 +564,248 @@
                         var tingkatanWilayah = this.value;
                         var wilayahSelect = document.getElementById("wilayah");
 
-                        wilayahSelect.innerHTML = '';
+                        wilayahSelect.innerHTML = '<option value="" selected>Pilih Wilayah</option>';
 
                         if (tingkatanWilayah === "Provinsi") {
                             @foreach ($Wilayah as $item)
-                                if ("{{ $item->k1 }}" !== "00" && !wilayahSelect.querySelector('option[value="{{ $item->k1 }}"]')) {
+                                if ("{{ $item->k1 }}" !== "00" && !wilayahSelect.querySelector(
+                                        'option[value="{{ $item->k1 }}"]')) {
                                     wilayahSelect.innerHTML +=
                                         '<option value="{{ $item->k1 }}">{{ $item->provinsi }}</option>';
                                 }
                             @endforeach
                         } else if (tingkatanWilayah === "Kab/Kota") {
                             @foreach ($Wilayah as $item)
-                                if ("{{ $item->k2 }}" !== "00" && !wilayahSelect.querySelector('option[value="{{ $item->k1 }}.{{ $item->k2 }}"]')) {
+                                if ("{{ $item->k2 }}" !== "00" && !wilayahSelect.querySelector(
+                                        'option[value="{{ $item->k1 }}.{{ $item->k2 }}"]')) {
                                     wilayahSelect.innerHTML +=
                                         '<option value="{{ $item->k1 }}.{{ $item->k2 }}">{{ $item->kabkota }}</option>';
                                 }
                             @endforeach
                         } else if (tingkatanWilayah === "Kecamatan") {
                             @foreach ($Wilayah as $item)
-                                if ("{{ $item->k3 }}" !== "00" && !wilayahSelect.querySelector('option[value="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}"]')) {
+                                if ("{{ $item->k3 }}" !== "00" && !wilayahSelect.querySelector(
+                                        'option[value="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}"]')) {
                                     wilayahSelect.innerHTML +=
                                         '<option value="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}">{{ $item->kecamatan }}</option>';
                                 }
                             @endforeach
                         } else if (tingkatanWilayah === "Desa/Kelurahan") {
                             @foreach ($Wilayah as $item)
-                                if ("{{ $item->k4 }}" !== "0000" && !wilayahSelect.querySelector('option[value="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}.{{ $item->k4 }}"]')) {
+                                if ("{{ $item->k4 }}" !== "0000" && !wilayahSelect.querySelector(
+                                        'option[value="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}.{{ $item->k4 }}"]'
+                                    )) {
                                     wilayahSelect.innerHTML +=
                                         '<option value="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}.{{ $item->k4 }}">{{ $item->deskel }}</option>';
                                 }
                             @endforeach
                         }
+                    });
+
+                    document.getElementById("wilayah").addEventListener("change", function() {
+                        var selectedOption = this.options[this.selectedIndex];
+                        var tingkatanWilayah = document.getElementById("tingkatan_wilayah");
+                        var selected = tingkatanWilayah.options[tingkatanWilayah.selectedIndex];
+                        var namaWilayahInput = document.getElementById("nama_wilayah");
+                        var kodeWilayahInput = document.getElementById("kode_wilayah");
+
+                        if (selectedOption.value !== "") {
+                            namaWilayahInput.value = selectedOption.textContent;
+                            if (selected.value == "Provinsi") {           
+                                var values = selectedOption.value.split(".");                     
+                                kodeWilayahInput.value = values[0];
+                            }
+                            else if (selected.value == "Kab/Kota") {           
+                                var values = selectedOption.value.split(".");                     
+                                kodeWilayahInput.value = values[1];
+                            }
+                            else if (selected.value == "Kecamatan") {           
+                                var values = selectedOption.value.split(".");                     
+                                kodeWilayahInput.value = values[2];
+                            }
+                            else if (selected.value == "Desa/Kelurahan") {           
+                                var values = selectedOption.value.split(".");                     
+                                kodeWilayahInput.value = values[3];
+                            }
+                        } else {
+                            namaWilayahInput.value = "";
+                        }
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+    <div id="editSelect" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="/editselect" method="POST" id="form_edit_select">
+                    @csrf
+                    <div class="modal-header">
+                        <h4 class="modal-title">Edit Select</h4>
+                        <button type="button" class="close" data-dismiss="modal"
+                            aria-hidden="true">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Tingkatan Wilayah</label>
+                            <select class="form-control" name="tingkatan_wilayah" id="tingkatan_wilayah_select">
+                                <option selected>Pilih Tingkatan Wilayah</option>
+                                <option value="Provinsi">Provinsi</option>
+                                <option value="Kab/Kota">Kab/Kota</option>
+                                <option value="Kecamatan">Kecamatan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Wilayah</label>
+                            <select class="form-control" name="wilayah" id="wilayah_select">
+                                <option selected>Pilih Wilayah</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Select Wilayah</label>
+                            <ul class="list-unstyled mb-0" id="checkboxWilayah">
+                            </ul>
+                        </div>
+                        <input type="hidden" value="" name="hasil_checkbox">
+                        <div class="form-group">
+                            <label>Nama Wilayah Baru</label>
+                            <input type="text" value="" class="form-control" id="nama_wilayah_baru"
+                                name="nama_wilayah" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Kode Wilayah</label>
+                            <input type="number" class="form-control" id="kode_wilayah_baru" name="kode_wilayah"
+                                required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                        <input type="submit" class="btn btn-success" value="Edit">
+                    </div>
+                </form>
+
+                <script>
+                    document.getElementById("tingkatan_wilayah_select").addEventListener("change", function() {
+                        var tingkatanWilayah = this.value;
+                        var wilayahSelect = document.getElementById("wilayah_select");
+                        var namaWilayahInput = document.getElementById("nama_wilayah");
+
+                        wilayahSelect.innerHTML = '<option value="" selected>Pilih Wilayah</option>';
+
+                        if (tingkatanWilayah === "Provinsi") {
+                            @foreach ($Wilayah as $item)
+                                if ("{{ $item->k1 }}" !== "00" && !wilayahSelect.querySelector(
+                                        'option[value="{{ $item->k1 }}"]')) {
+                                    wilayahSelect.innerHTML +=
+                                        '<option value="{{ $item->k1 }}">{{ $item->provinsi }}</option>';
+                                }
+                            @endforeach
+                        } else if (tingkatanWilayah === "Kab/Kota") {
+                            @foreach ($Wilayah as $item)
+                                if ("{{ $item->k2 }}" !== "00" && !wilayahSelect.querySelector(
+                                        'option[value="{{ $item->k1 }}.{{ $item->k2 }}"]')) {
+                                    wilayahSelect.innerHTML +=
+                                        '<option value="{{ $item->k1 }}.{{ $item->k2 }}">{{ $item->kabkota }}</option>';
+                                }
+                            @endforeach
+                        } else if (tingkatanWilayah === "Kecamatan") {
+                            @foreach ($Wilayah as $item)
+                                if ("{{ $item->k3 }}" !== "00" && !wilayahSelect.querySelector(
+                                        'option[value="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}"]')) {
+                                    wilayahSelect.innerHTML +=
+                                        '<option value="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}">{{ $item->kecamatan }}</option>';
+                                }
+                            @endforeach
+                        }
+                    });
+
+                    document.getElementById("wilayah_select").addEventListener("change", function() {
+                        var selectedOption = this.options[this.selectedIndex];
+                        var namaWilayahInput = document.getElementById("nama_wilayah_baru");
+                        var tingkatanWilayah = document.getElementById("tingkatan_wilayah_select");
+                        var selected = tingkatanWilayah.options[tingkatanWilayah.selectedIndex];
+                        var kodeWilayahInput = document.getElementById("kode_wilayah_baru");
+
+                        if (selectedOption.value !== "") {
+                            namaWilayahInput.value = selectedOption.textContent;
+                            if (selected.value == "Provinsi") {           
+                                var values = selectedOption.value.split(".");                     
+                                kodeWilayahInput.value = values[0];
+                            }
+                            else if (selected.value == "Kab/Kota") {           
+                                var values = selectedOption.value.split(".");                     
+                                kodeWilayahInput.value = values[1];
+                            }
+                            else if (selected.value == "Kecamatan") {           
+                                var values = selectedOption.value.split(".");                     
+                                kodeWilayahInput.value = values[2];
+                            }
+                        } else {
+                            namaWilayahInput.value = "";
+                        }
+                    });
+
+                    document.getElementById("wilayah_select").addEventListener("change", function() {
+                        var tingkatanWilayah = this.value;
+                        var wilayahSelect = document.getElementById("checkboxWilayah");
+
+                        wilayahSelect.innerHTML = '';
+
+                        @foreach ($Wilayah as $item)
+                            if (tingkatanWilayah === "{{ $item->k1 }}") {
+                                if ("{{ $item->k2 }}" !== "00" && !wilayahSelect.querySelector(
+                                        'li[id="{{ $item->k1 }}.{{ $item->k2 }}"]')) {
+                                    wilayahSelect.innerHTML +=
+                                        '<li class="d-inline-block" style="margin-right: 10px" id="{{ $item->k1 }}.{{ $item->k2 }}">' +
+                                        '<div class="form-check">' +
+                                        '<div class="checkbox">' +
+                                        '<input type="checkbox" name="checkbox_wilayah" value="{{ $item->k1 }}.{{ $item->k2 }}" id="checkbox{{ $item->kode }}" class="form-check-input">' +
+                                        '<label for="checkbox{{ $item->kode }}">{{ $item->kabkota }}</label>' +
+                                        '</div>' +
+                                        '</div>' +
+                                        '</li>';
+                                }
+                            } else if (tingkatanWilayah === "{{ $item->k1 }}.{{ $item->k2 }}") {
+                                if ("{{ $item->k3 }}" !== "00" && !wilayahSelect.querySelector(
+                                        'li[id="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}"]')) {
+                                    wilayahSelect.innerHTML +=
+                                        '<li class="d-inline-block" style="margin-right: 10px" id="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}">' +
+                                        '<div class="form-check">' +
+                                        '<div class="checkbox">' +
+                                        '<input type="checkbox" name="checkbox_wilayah" value="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}" id="checkbox{{ $item->kode }}" class="form-check-input">' +
+                                        '<label for="checkbox{{ $item->kode }}">{{ $item->kecamatan }}</label>' +
+                                        '</div>' +
+                                        '</div>' +
+                                        '</li>';
+                                }
+                            } else if (tingkatanWilayah === "{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}") {
+                                if ("{{ $item->k4 }}" !== "0000" && !wilayahSelect.querySelector(
+                                        'li[id="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}.{{ $item->k4 }}"]'
+                                    )) {
+                                    wilayahSelect.innerHTML +=
+                                        '<li class="d-inline-block" style="margin-right: 10px" id="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}.{{ $item->k4 }}">' +
+                                        '<div class="form-check">' +
+                                        '<div class="checkbox">' +
+                                        '<input type="checkbox" name="checkbox_wilayah" value="{{ $item->k1 }}.{{ $item->k2 }}.{{ $item->k3 }}.{{ $item->k4 }}" id="checkbox{{ $item->kode }}" class="form-check-input">' +
+                                        '<label for="checkbox{{ $item->kode }}">{{ $item->deskel }}</label>' +
+                                        '</div>' +
+                                        '</div>' +
+                                        '</li>';
+                                }
+                            }
+                        @endforeach
+                    });
+
+                    document.getElementById("form_edit_select").addEventListener('submit', function(event) {
+                        event.preventDefault();
+
+                        const selectedCheckboxes = Array.from(document.querySelectorAll(
+                                'input[name="checkbox_wilayah"]:checked'))
+                            .map(checkbox => checkbox.value);
+
+                        document.querySelector('input[name="hasil_checkbox"]').value = selectedCheckboxes.join(',');
+
+                        this.submit();
                     });
                 </script>
             </div>

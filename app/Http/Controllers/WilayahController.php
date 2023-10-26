@@ -10,7 +10,7 @@ class WilayahController extends Controller
 {
     public function home()
     {
-        $Wilayah = Wilayah::paginate(10000);
+        $Wilayah = Wilayah::get();
         return view('home', compact('Wilayah'));
     }
 
@@ -153,7 +153,7 @@ class WilayahController extends Controller
 
         file_put_contents($sqlFilePath, $sql, FILE_APPEND);
 
-        return redirect('/');
+        return redirect()->back();
     }
 
     public function update(Request $request, $kode)
@@ -288,7 +288,7 @@ class WilayahController extends Controller
             file_put_contents($sqlFilePath, $sql, FILE_APPEND);
         }
 
-        return redirect('/');
+        return redirect()->back();
     }
 
     public function hapus($kode)
@@ -303,7 +303,7 @@ class WilayahController extends Controller
 
         $Wilayah->delete();
 
-        return redirect('/');
+        return redirect()->back();
     }
 
     public function sesibaru()
@@ -423,7 +423,7 @@ class WilayahController extends Controller
             file_put_contents($sqlFilePath, $sql, FILE_APPEND);
         }
 
-        return redirect('/');
+        return redirect()->back();
     }
 
     public function editSelect(Request $request)
@@ -522,6 +522,6 @@ class WilayahController extends Controller
             }
         }
 
-        return redirect('/');
+        return redirect()->back();
     }
 }

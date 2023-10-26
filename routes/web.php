@@ -14,7 +14,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', [WilayahController::class, 'index']);
+Route::get('/', [WilayahController::class, 'home']);
+Route::get('/provinsi/{k1}', [WilayahController::class, 'provinsi']);
+Route::get('/kabkota/{k2}', [WilayahController::class, 'kabkota']);
+Route::get('/kecamatan/{k3}', [WilayahController::class, 'kecamatan']);
+Route::get('/wilayah', [WilayahController::class, 'index']);
+Route::get('/wilayah/{search}', [WilayahController::class, 'search'])->name('wilayah.search');
 Route::post('/tambah', [WilayahController::class, 'store']);
 Route::post('/edit/{kode}', [WilayahController::class, 'update']);
 Route::get('/hapus/{kode}', [WilayahController::class, 'hapus']);

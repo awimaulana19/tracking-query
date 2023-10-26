@@ -9,9 +9,11 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.css" />
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             color: #566787;
@@ -249,16 +251,20 @@
                             <a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal"><i
                                     class="material-icons">&#xE147;</i> <span>Tambah Wilayah</span></a>
                             <a href="/sesibaru" class="btn btn-primary"><span>Download SQL Dan Buka Sesi Baru</span></a>
-                            <a href="#editMultiple" class="btn btn-warning" data-toggle="modal"><span>Multiple
+                            <a href="/" class="btn btn-info"><span>Multiple
                                     Edit</span></a>
-                            <a href="#editSelect" class="btn btn-info" data-toggle="modal"><span>Select Edit</span></a>
+                            {{-- <a href="#editSelect" class="btn btn-info" data-toggle="modal"><span>Select Edit</span></a> --}}
                         </div>
                     </div>
                 </div>
                 @if (session('error'))
                     <p class="alert alert-danger">{{ session('error') }}</p>
                 @endif
-                <table class="table table-striped table-hover">
+                <div class="d-flex mb-3 mt-3">
+                    <input type="text" id="search" placeholder="Search Global"
+                        style="border: black solid 1px; padding:7px;">
+                </div>
+                <table class="table table-striped table-hover" id="myTable">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -351,7 +357,7 @@
                                             <div class="modal-footer">
                                                 <input type="button" class="btn btn-default" data-dismiss="modal"
                                                     value="Cancel">
-                                                <input type="submit" class="btn btn-info" value="Edit">
+                                                <input type="submit" class="btn btn-outline-info" value="Edit">
                                             </div>
                                         </form>
                                     </div>
@@ -386,10 +392,13 @@
                 </table>
             </div>
         </div>
+        @if ($Wilayah->hasPages())
+            <div class="mb-3" style="background: white; padding: 20px;">
+                <p>Paginate Global :</p>
+                {{ $Wilayah->links() }}
+            </div>
+        @endif
     </div>
-    {{-- <div class="pagination" style="10%">
-        {{ $Wilayah->links() }}
-    </div> --}}
     <div id="addEmployeeModal" class="modal fade">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -440,7 +449,7 @@
                     </div>
                     <div class="modal-footer">
                         <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
-                        <input type="submit" class="btn btn-success" value="Tambah">
+                        <input type="submit" class="btn btn-outline-success" value="Tambah">
                     </div>
                 </form>
 
@@ -515,7 +524,7 @@
             </div>
         </div>
     </div>
-    <div id="editMultiple" class="modal fade">
+    {{-- <div id="editMultiple" class="modal fade">
         <div class="modal-dialog">
             <div class="modal-content">
                 <form action="/editmultiple" method="POST">
@@ -810,7 +819,26 @@
                 </script>
             </div>
         </div>
-    </div>
+    </div> --}}
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var table = $('#myTable').DataTable();
+
+            $('#search').on('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    var searchValue = $(this).val();
+                    var searchURL = "/wilayah/" + searchValue;
+                    window.location.href = searchURL;
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

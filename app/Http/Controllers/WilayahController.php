@@ -8,9 +8,74 @@ use Illuminate\Support\Facades\DB;
 
 class WilayahController extends Controller
 {
+    public function home()
+    {
+        $Wilayah = Wilayah::paginate(10000);
+        return view('home', compact('Wilayah'));
+    }
+
+    public function provinsi($k1)
+    {
+        $Wilayah = Wilayah::where('k1', $k1)->get();
+        return view('provinsi', compact('Wilayah'));
+    }
+
+    public function kabkota($k2)
+    {
+        $kodePotongan = explode('.', $k2);
+        $kode1 = $kodePotongan[0];
+        $kode2 = $kodePotongan[1];
+        $Wilayah = Wilayah::where('k1', $kode1)->where('k2', $kode2)->get();
+        return view('kabupaten', compact('Wilayah'));
+    }
+
+    public function kecamatan($k3)
+    {
+        $kodePotongan = explode('.', $k3);
+        $kode1 = $kodePotongan[0];
+        $kode2 = $kodePotongan[1];
+        $kode3 = $kodePotongan[2];
+        $Wilayah = Wilayah::where('k1', $kode1)->where('k2', $kode2)->where('k3', $kode3)->get();
+        return view('kecamatan', compact('Wilayah'));
+    }
+
+    // public function deskel($k4)
+    // {
+    //     $kodePotongan = explode('.', $k4);
+    //     $kode1 = $kodePotongan[0];
+    //     $kode2 = $kodePotongan[1];
+    //     $kode3 = $kodePotongan[2];
+    //     $kode4 = $kodePotongan[3];
+    //     $Wilayah = Wilayah::where('k1', $kode1)->where('k2', $kode2)->where('k3', $kode3)->where('k4', $kode4)->get();
+    //     return view('deskel', compact('Wilayah'));
+    // }
+
     public function index()
     {
-        $Wilayah = Wilayah::paginate(100);
+        $Wilayah = Wilayah::paginate(200);
+        return view('index', compact('Wilayah'));
+    }
+
+    public function search($search)
+    {
+        $query = Wilayah::query();
+
+        if ($search) {
+            $query->where(function ($query) use ($search) {
+                $query->where('kode', 'like', '%' . $search . '%')
+                    ->orWhere('k1', 'like', '%' . $search . '%')
+                    ->orWhere('k2', 'like', '%' . $search . '%')
+                    ->orWhere('k3', 'like', '%' . $search . '%')
+                    ->orWhere('k4', 'like', '%' . $search . '%')
+                    ->orWhere('provinsi', 'like', '%' . $search . '%')
+                    ->orWhere('kabkota', 'like', '%' . $search . '%')
+                    ->orWhere('kecamatan', 'like', '%' . $search . '%')
+                    ->orWhere('deskel', 'like', '%' . $search . '%');
+            });
+        }
+
+        $Wilayah = $query->paginate(200);
+
         return view('index', compact('Wilayah'));
     }
 

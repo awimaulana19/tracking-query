@@ -18,47 +18,49 @@
                 @endif
                 <div class="d-flex align-items-center mt-4 mb-1">
                     <h3 class="link-wilayah" style="margin: 0;">{{ $data['kode'] }} - {{ $data['deskel'] }}</h3>
-                    <button type="button" data-bs-target="{{ '#editMultiple' . str_replace('.', '_', $data->kode) }}"
-                        data-bs-toggle="modal" class="btn btn-success btn-sm ms-3 text-white">
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <div class="modal fade" id="{{ 'editMultiple' . str_replace('.', '_', $data->kode) }}" tabindex="-1"
-                        aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <form action="/editmultiple" method="POST">
-                                    @csrf
-                                    <div class="modal-header">
-                                        <h4 class="modal-title">Edit {{ $data['deskel'] }}</h4>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <input type="hidden" name="tingkatan_wilayah" value="Desa/Kelurahan">
-                                        <input type="hidden" name="wilayah" value="{{ $data->kode }}">
-                                        <div class="form-group mb-3">
-                                            <label>Nama Wilayah</label>
-                                            <input type="text" class="form-control" id="nama_wilayah" name="nama_wilayah"
-                                                value="{{ $data['deskel'] }}" required>
+                    @auth
+                        <button type="button" data-bs-target="{{ '#editMultiple' . str_replace('.', '_', $data->kode) }}"
+                            data-bs-toggle="modal" class="btn btn-success btn-sm ms-3 text-white">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <div class="modal fade" id="{{ 'editMultiple' . str_replace('.', '_', $data->kode) }}" tabindex="-1"
+                            aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form action="/editmultiple" method="POST">
+                                        @csrf
+                                        <div class="modal-header">
+                                            <h4 class="modal-title">Edit {{ $data['deskel'] }}</h4>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
                                         </div>
-                                        <div class="form-group mb-3">
-                                            <label>Kode Wilayah</label>
-                                            @php
-                                                $kodePotongan = explode('.', $data->kode);
-                                            @endphp
-                                            <input type="number" class="form-control" id="kode_wilayah" name="kode_wilayah"
-                                                value="{{ $kodePotongan[3] }}" required>
+                                        <div class="modal-body">
+                                            <input type="hidden" name="tingkatan_wilayah" value="Desa/Kelurahan">
+                                            <input type="hidden" name="wilayah" value="{{ $data->kode }}">
+                                            <div class="form-group mb-3">
+                                                <label>Nama Wilayah</label>
+                                                <input type="text" class="form-control" id="nama_wilayah" name="nama_wilayah"
+                                                    value="{{ $data['deskel'] }}" required>
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label>Kode Wilayah</label>
+                                                @php
+                                                    $kodePotongan = explode('.', $data->kode);
+                                                @endphp
+                                                <input type="number" class="form-control" id="kode_wilayah" name="kode_wilayah"
+                                                    value="{{ $kodePotongan[3] }}" required>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <input type="button" type="button" data-bs-dismiss="modal" aria-label="Close"
-                                            value="Cancel" class="btn btn-secondary">
-                                        <input type="submit" class="btn btn-success text-white" value="Update">
-                                    </div>
-                                </form>
+                                        <div class="modal-footer">
+                                            <input type="button" type="button" data-bs-dismiss="modal" aria-label="Close"
+                                                value="Cancel" class="btn btn-secondary">
+                                            <input type="submit" class="btn btn-success text-white" value="Update">
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endauth
                 </div>
             @endforeach
         </div>

@@ -261,7 +261,7 @@
                     <p class="alert alert-danger">{{ session('error') }}</p>
                 @endif
                 <div class="d-flex mb-3 mt-3">
-                    <input type="text" id="search" placeholder="Search Global"
+                    <input type="text" id="search" placeholder="Search All"
                         style="border: black solid 1px; padding:7px;">
                 </div>
                 <table class="table table-striped table-hover" id="myTable">

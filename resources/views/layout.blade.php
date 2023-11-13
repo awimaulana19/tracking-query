@@ -54,13 +54,20 @@
                 <h1 class="h2">Kode Wilayah<br><span class="h3 text-uppercase fw-normal">by</span><span
                         class="h3 text-capitalize fw-normal"> <a href="/" style="text-decoration: none"
                             class="text-success">DIGIDES</a></span></h1>
-                <div>
-                    <a href="/sesibaru" class="btn btn-success btn-sm me-2"><span>Download SQL Dan Buka Sesi
-                            Baru</span></a>
-                    <a href="/wilayah" class="btn btn-success btn-sm">
-                        Tambah Wilayah
-                    </a>
-                </div>
+                @auth
+                    <div>
+                        <a href="/sesibaru" class="btn btn-success btn-sm me-2"><span>Download SQL Dan Buka Sesi
+                                Baru</span></a>
+                        <a href="/wilayah" class="btn btn-success btn-sm">
+                            Tambah Wilayah
+                        </a>
+                    </div>
+                @endauth
+            </div>
+            <div class="d-flex my-3">
+                <input type="text" id="search" placeholder="Cari Wilayah/Kode"
+                    style="border: black solid 1px; padding:7px; border-radius: 10px; width:40%;">
+                <button id="cari" class="ms-2 btn btn-success">Cari</button>
             </div>
             @if (session('error'))
                 <p class="alert alert-danger">{{ session('error') }}</p>
@@ -73,6 +80,23 @@
     </main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#search').on('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    var searchValue = $(this).val();
+                    var searchURL = "/cari?q=" + searchValue;
+                    window.location.href = searchURL;
+                }
+            });
+            $('#cari').on('click', function(event) {
+                var searchValue = $('#search').val();
+                var searchURL = "/cari?q=" + searchValue;
+                window.location.href = searchURL;
+            });
+        });
     </script>
 </body>
 

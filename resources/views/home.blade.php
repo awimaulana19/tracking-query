@@ -3,26 +3,6 @@
 @section('title', 'Home')
 
 @section('content')
-    @php
-        $provinsiKabupaten = [];
-        foreach ($Wilayah as $item) {
-            $provinsiKode = $item->k1;
-            $kabupatenKode = $item->k1 . '.' . $item->k2;
-
-            if (!isset($provinsiKabupaten[$provinsiKode])) {
-                $provinsiKabupaten[$provinsiKode] = [
-                    'provinsi' => $item->provinsi,
-                    'kabupaten' => collect(),
-                ];
-            }
-
-            if ($item->kabkota) {
-                if (!$provinsiKabupaten[$provinsiKode]['kabupaten']->contains('kabkota', $item->kabkota)) {
-                    $provinsiKabupaten[$provinsiKode]['kabupaten']->push(['kabkota' => $item->kabkota, 'kabupatenKode' => $kabupatenKode]);
-                }
-            }
-        }
-    @endphp
     <div class="col-md-12">
         @foreach ($provinsiKabupaten as $provinsiKode => $data)
             <div class="row">
@@ -31,88 +11,93 @@
                         <a href="/provinsi/{{ $provinsiKode }}">
                             <h3 class="link-wilayah">{{ $provinsiKode }} - {{ $data['provinsi'] }}</h3>
                         </a>
-                        <button type="button" data-bs-target="#editSelect{{ $provinsiKode }}" data-bs-toggle="modal"
-                            class="btn btn-success btn-sm mt-1">
-                            Edit Select
-                        </button>
+                        @auth
+                            <button type="button" data-bs-target="#editSelect{{ $provinsiKode }}" data-bs-toggle="modal"
+                                class="btn btn-success btn-sm mt-1">
+                                Edit Select
+                            </button>
+                        @endauth
                     </div>
-                    <button type="button" data-bs-target="#editMultiple{{ $provinsiKode }}" data-bs-toggle="modal"
-                        class="btn btn-success text-white">
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
+                    @auth
+                        <button type="button" data-bs-target="#editMultiple{{ $provinsiKode }}" data-bs-toggle="modal"
+                            class="btn btn-success text-white">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
 
-                    <div class="modal fade" id="editMultiple{{ $provinsiKode }}" tabindex="-1"
+                        <div class="modal fade" id="editMultiple{{ $provinsiKode }}" tabindex="-1"
+                            aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form action="/editmultiple" method="POST">
+                                        @csrf
+                                        <div class="modal-header">
+                                            <h4 class="modal-title">Edit {{ $data['provinsi'] }}</h4>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" name="tingkatan_wilayah" value="Provinsi">
+                                            <input type="hidden" name="wilayah" value="{{ $provinsiKode }}">
+                                            <div class="form-group mb-3">
+                                                <label>Nama Wilayah</label>
+                                                <input type="text" class="form-control" id="nama_wilayah" name="nama_wilayah"
+                                                    value="{{ $data['provinsi'] }}" required>
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label>Kode Wilayah</label>
+                                                <input type="number" class="form-control" id="kode_wilayah" name="kode_wilayah"
+                                                    value="{{ $provinsiKode }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <input type="button" type="button" data-bs-dismiss="modal" aria-label="Close"
+                                                value="Cancel" class="btn btn-secondary">
+                                            <input type="submit" class="btn btn-success text-white" value="Update">
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @endauth
+                </div>
+                @auth
+                    <div id="editSelect{{ $provinsiKode }}" class="modal fade" tabindex="-1"
                         aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
-                                <form action="/editmultiple" method="POST">
+                                <form action="/editselect" method="POST" id="form_edit_select{{ $provinsiKode }}">
                                     @csrf
                                     <div class="modal-header">
-                                        <h4 class="modal-title">Edit {{ $data['provinsi'] }}</h4>
+                                        <h4 class="modal-title">Edit Select</h4>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                             aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
                                         <input type="hidden" name="tingkatan_wilayah" value="Provinsi">
                                         <input type="hidden" name="wilayah" value="{{ $provinsiKode }}">
+                                        <input type="hidden" value="" name="hasil_checkbox"
+                                            id="hasil_checkbox{{ $provinsiKode }}">
                                         <div class="form-group mb-3">
-                                            <label>Nama Wilayah</label>
-                                            <input type="text" class="form-control" id="nama_wilayah" name="nama_wilayah"
-                                                value="{{ $data['provinsi'] }}" required>
+                                            <label>Nama Wilayah Baru</label>
+                                            <input type="text" value="{{ $data['provinsi'] }}" class="form-control"
+                                                id="nama_wilayah_baru" name="nama_wilayah" required>
                                         </div>
                                         <div class="form-group mb-3">
                                             <label>Kode Wilayah</label>
-                                            <input type="number" class="form-control" id="kode_wilayah" name="kode_wilayah"
-                                                value="{{ $provinsiKode }}" required>
+                                            <input type="number" value="{{ $provinsiKode }}" class="form-control"
+                                                id="kode_wilayah_baru" name="kode_wilayah" required>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
                                         <input type="button" type="button" data-bs-dismiss="modal" aria-label="Close"
                                             value="Cancel" class="btn btn-secondary">
-                                        <input type="submit" class="btn btn-success text-white" value="Update">
+                                        <input type="submit" class="btn btn-success" value="Update">
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div id="editSelect{{ $provinsiKode }}" class="modal fade" tabindex="-1"
-                    aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <form action="/editselect" method="POST" id="form_edit_select{{ $provinsiKode }}">
-                                @csrf
-                                <div class="modal-header">
-                                    <h4 class="modal-title">Edit Select</h4>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <input type="hidden" name="tingkatan_wilayah" value="Provinsi">
-                                    <input type="hidden" name="wilayah" value="{{ $provinsiKode }}">
-                                    <input type="hidden" value="" name="hasil_checkbox"
-                                        id="hasil_checkbox{{ $provinsiKode }}">
-                                    <div class="form-group mb-3">
-                                        <label>Nama Wilayah Baru</label>
-                                        <input type="text" value="{{ $data['provinsi'] }}" class="form-control"
-                                            id="nama_wilayah_baru" name="nama_wilayah" required>
-                                    </div>
-                                    <div class="form-group mb-3">
-                                        <label>Kode Wilayah</label>
-                                        <input type="number" value="{{ $provinsiKode }}" class="form-control"
-                                            id="kode_wilayah_baru" name="kode_wilayah" required>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <input type="button" type="button" data-bs-dismiss="modal" aria-label="Close"
-                                        value="Cancel" class="btn btn-secondary">
-                                    <input type="submit" class="btn btn-success" value="Update">
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+                @endauth
                 @php $count = 0; @endphp
                 @foreach ($data['kabupaten'] as $kabupaten)
                     <div class="col-md-4">
@@ -141,20 +126,22 @@
                     @endphp
                 @endforeach
 
-                <script>
-                    document.getElementById("form_edit_select{{ $provinsiKode }}").addEventListener('submit', function(event) {
-                        event.preventDefault();
+                @auth
+                    <script>
+                        document.getElementById("form_edit_select{{ $provinsiKode }}").addEventListener('submit', function(event) {
+                            event.preventDefault();
 
-                        const selectedCheckboxes = Array.from(document.querySelectorAll(
-                                'input[name="checkbox_wilayah{{ $provinsiKode }}"]:checked'))
-                            .map(checkbox => checkbox.value);
+                            const selectedCheckboxes = Array.from(document.querySelectorAll(
+                                    'input[name="checkbox_wilayah{{ $provinsiKode }}"]:checked'))
+                                .map(checkbox => checkbox.value);
 
-                        document.querySelector('input[id="hasil_checkbox{{ $provinsiKode }}"]').value = selectedCheckboxes
-                            .join(',');
+                            document.querySelector('input[id="hasil_checkbox{{ $provinsiKode }}"]').value = selectedCheckboxes
+                                .join(',');
 
-                        this.submit();
-                    });
-                </script>
+                            this.submit();
+                        });
+                    </script>
+                @endauth
             </div>
         @endforeach
     </div>

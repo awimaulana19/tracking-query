@@ -11,13 +11,53 @@ class WilayahController extends Controller
     public function home()
     {
         $Wilayah = Wilayah::get();
-        return view('home', compact('Wilayah'));
+
+        $provinsiKabupaten = [];
+        foreach ($Wilayah as $item) {
+            $provinsiKode = $item->k1;
+            $kabupatenKode = $item->k1 . '.' . $item->k2;
+
+            if (!isset($provinsiKabupaten[$provinsiKode])) {
+                $provinsiKabupaten[$provinsiKode] = [
+                    'provinsi' => $item->provinsi,
+                    'kabupaten' => collect(),
+                ];
+            }
+
+            if ($item->kabkota) {
+                if (!$provinsiKabupaten[$provinsiKode]['kabupaten']->contains('kabkota', $item->kabkota)) {
+                    $provinsiKabupaten[$provinsiKode]['kabupaten']->push(['kabkota' => $item->kabkota, 'kabupatenKode' => $kabupatenKode]);
+                }
+            }
+        }
+
+        return view('home', compact('provinsiKabupaten'));
     }
 
     public function provinsi($k1)
     {
         $Wilayah = Wilayah::where('k1', $k1)->get();
-        return view('provinsi', compact('Wilayah'));
+
+        $kabupatenKecamatan = [];
+        foreach ($Wilayah as $item) {
+            $kabupatenKode = $item->k1 . '.' . $item->k2;
+            $kecamatanKode = $item->k1 . '.' . $item->k2 . '.' . $item->k3;
+
+            if (!isset($kabupatenKecamatan[$kabupatenKode])) {
+                $kabupatenKecamatan[$kabupatenKode] = [
+                    'kabkota' => $item->kabkota,
+                    'kecamatan' => collect(),
+                ];
+            }
+
+            if ($item->kecamatan) {
+                if (!$kabupatenKecamatan[$kabupatenKode]['kecamatan']->contains('kecamatan', $item->kecamatan)) {
+                    $kabupatenKecamatan[$kabupatenKode]['kecamatan']->push(['kecamatan' => $item->kecamatan, 'kecamatanKode' => $kecamatanKode]);
+                }
+            }
+        }
+
+        return view('provinsi', compact('kabupatenKecamatan'));
     }
 
     public function kabkota($k2)
@@ -26,7 +66,27 @@ class WilayahController extends Controller
         $kode1 = $kodePotongan[0];
         $kode2 = $kodePotongan[1];
         $Wilayah = Wilayah::where('k1', $kode1)->where('k2', $kode2)->get();
-        return view('kabupaten', compact('Wilayah'));
+
+        $kecamatanDeskel = [];
+        foreach ($Wilayah as $item) {
+            $kecamatanKode = $item->k1 . '.' . $item->k2 . '.' . $item->k3;
+            $deskelKode = $item->k1 . '.' . $item->k2 . '.' . $item->k3 . '.' . $item->k4;
+
+            if (!isset($kecamatanDeskel[$kecamatanKode])) {
+                $kecamatanDeskel[$kecamatanKode] = [
+                    'kecamatan' => $item->kecamatan,
+                    'deskel' => collect(),
+                ];
+            }
+
+            if ($item->deskel) {
+                if (!$kecamatanDeskel[$kecamatanKode]['deskel']->contains('deskel', $item->deskel)) {
+                    $kecamatanDeskel[$kecamatanKode]['deskel']->push(['deskel' => $item->deskel, 'deskelKode' => $deskelKode]);
+                }
+            }
+        }
+
+        return view('kabupaten', compact('Wilayah', 'kecamatanDeskel'));
     }
 
     public function kecamatan($k3)
@@ -38,17 +98,6 @@ class WilayahController extends Controller
         $Wilayah = Wilayah::where('k1', $kode1)->where('k2', $kode2)->where('k3', $kode3)->get();
         return view('kecamatan', compact('Wilayah'));
     }
-
-    // public function deskel($k4)
-    // {
-    //     $kodePotongan = explode('.', $k4);
-    //     $kode1 = $kodePotongan[0];
-    //     $kode2 = $kodePotongan[1];
-    //     $kode3 = $kodePotongan[2];
-    //     $kode4 = $kodePotongan[3];
-    //     $Wilayah = Wilayah::where('k1', $kode1)->where('k2', $kode2)->where('k3', $kode3)->where('k4', $kode4)->get();
-    //     return view('deskel', compact('Wilayah'));
-    // }
 
     public function index()
     {
@@ -77,6 +126,90 @@ class WilayahController extends Controller
         $Wilayah = $query->paginate(200);
 
         return view('index', compact('Wilayah'));
+    }
+
+    public function searchGuest(Request $request)
+    {
+        $result = [];
+
+        if (!$request->q) {
+            return view('cari', compact('result'));
+        }
+
+        $searchProvinsi = Wilayah::select(['provinsi', DB::raw("MAX(k1) as kode")])->where('provinsi', 'like', '%' . $request->q . '%')
+            ->groupBy('provinsi', 'k1')
+            ->get();
+
+        foreach ($searchProvinsi as $item) {
+            $result[] = [
+                'nama' => $item->provinsi,
+                'kode' => $item->kode,
+            ];
+        }
+
+        $searchKabkota = Wilayah::select(['kabkota', DB::raw("MAX(CONCAT(k1, '.', k2)) as kode")])->where('kabkota', 'like', '%' . $request->q . '%')
+            ->groupBy('kabkota', 'k1', 'k2')
+            ->get();
+
+        foreach ($searchKabkota as $item) {
+            $result[] = [
+                'nama' => $item->kabkota,
+                'kode' => $item->kode,
+            ];
+        }
+
+        $searchKecamatan = Wilayah::select(['kecamatan', DB::raw("MAX(CONCAT(k1, '.', k2, '.', k3)) as kode")])->where('kecamatan', 'like', '%' . $request->q . '%')
+            ->groupBy('kecamatan', 'k1', 'k2', 'k3')
+            ->get();
+
+        foreach ($searchKecamatan as $item) {
+            $result[] = [
+                'nama' => $item->kecamatan,
+                'kode' => $item->kode,
+            ];
+        }
+
+        $searchDeskel = Wilayah::select(['deskel', DB::raw("MAX(kode) as kode")])->where('deskel', 'like', '%' . $request->q . '%')
+            ->groupBy('deskel', 'kode')
+            ->get();
+
+        foreach ($searchDeskel as $item) {
+            $result[] = [
+                'nama' => $item->deskel,
+                'kode' => $item->kode,
+            ];
+        }
+
+        $searchKode = Wilayah::select('kode')->where('kode', 'like', '%' . $request->q . '%')->get();
+
+        foreach ($searchKode as $item) {
+            $wilayah = Wilayah::where('kode', $item->kode)->first();
+
+            $nama = '';
+
+            if (strpos($item->kode, '.') === false) {
+                $nama = $wilayah->provinsi;
+            } elseif (substr_count($item->kode, '.') == 1) {
+                $nama = $wilayah->kabkota;
+            } elseif (substr_count($item->kode, '.') == 2) {
+                $nama = $wilayah->kecamatan;
+            } elseif (substr_count($item->kode, '.') == 3) {
+                $nama = $wilayah->deskel;
+            }
+
+            $result[] = [
+                'nama' => $nama,
+                'kode' => $item->kode,
+            ];
+        }
+
+        usort($result, function ($a, $b) {
+            return strcmp($a['kode'], $b['kode']);
+        });
+
+        $search = $request->q;
+
+        return view('cari', compact('result', 'search'));
     }
 
     public function store(Request $request)

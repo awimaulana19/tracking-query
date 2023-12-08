@@ -10,26 +10,9 @@ class WilayahController extends Controller
 {
     public function home()
     {
-        $Wilayah = Wilayah::get();
-
-        $provinsiKabupaten = [];
-        foreach ($Wilayah as $item) {
-            $provinsiKode = $item->k1;
-            $kabupatenKode = $item->k1 . '.' . $item->k2;
-
-            if (!isset($provinsiKabupaten[$provinsiKode])) {
-                $provinsiKabupaten[$provinsiKode] = [
-                    'provinsi' => $item->provinsi,
-                    'kabupaten' => collect(),
-                ];
-            }
-
-            if ($item->kabkota) {
-                if (!$provinsiKabupaten[$provinsiKode]['kabupaten']->contains('kabkota', $item->kabkota)) {
-                    $provinsiKabupaten[$provinsiKode]['kabupaten']->push(['kabkota' => $item->kabkota, 'kabupatenKode' => $kabupatenKode]);
-                }
-            }
-        }
+        $provinsiKabupaten = Wilayah::select('k1', 'provinsi')
+            ->groupBy('k1', 'provinsi')
+            ->get();
 
         return view('home', compact('provinsiKabupaten'));
     }
@@ -101,7 +84,7 @@ class WilayahController extends Controller
 
     public function index()
     {
-        $Wilayah = Wilayah::paginate(200);
+        $Wilayah = Wilayah::paginate(50);
         return view('index', compact('Wilayah'));
     }
 
@@ -123,7 +106,7 @@ class WilayahController extends Controller
             });
         }
 
-        $Wilayah = $query->paginate(200);
+        $Wilayah = $query->paginate(50);
 
         return view('index', compact('Wilayah'));
     }

@@ -250,6 +250,7 @@
                         <div class="col-sm-8">
                             <a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal"><i
                                     class="material-icons">&#xE147;</i> <span>Tambah Wilayah</span></a>
+                            <a href="/logout" class="btn btn-danger"><span>Logout</span></a>
                             <a href="/sesibaru" class="btn btn-primary"><span>Download SQL Dan Buka Sesi Baru</span></a>
                             <a href="/" class="btn btn-info"><span>Multiple
                                     Edit</span></a>
@@ -394,7 +395,6 @@
         </div>
         @if ($Wilayah->hasPages())
             <div class="mb-3" style="background: white; padding: 20px;">
-                <p>Paginate Global :</p>
                 {{ $Wilayah->links() }}
             </div>
         @endif
@@ -823,13 +823,9 @@
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 
     <script>
         $(document).ready(function() {
-            var table = $('#myTable').DataTable();
-
             $('#search').on('keyup', function(event) {
                 if (event.key === 'Enter') {
                     var searchValue = $(this).val();

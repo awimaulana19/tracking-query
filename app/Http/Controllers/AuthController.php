@@ -14,12 +14,12 @@ class AuthController extends Controller
 
     public function login_action(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'username' => 'required',
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt(['username' => $request->username, 'password' => $request->password])) {
             return redirect('/wilayah');
         }
 
